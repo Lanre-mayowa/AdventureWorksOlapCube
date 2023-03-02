@@ -1,0 +1,1687 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1600,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019",
+        "connectionDetails": {
+          "protocol": "tds",
+          "address": {
+            "server": "DESKTOP-RS9P4A5",
+            "database": "AdventureWorksDW2019"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "ServiceAccount",
+          "kind": "SQL",
+          "path": "desktop-rs9p4a5;AdventureWorksDW2019",
+          "EncryptConnection": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "DimProducts",
+        "columns": [
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "WeightUnitMeasureCode",
+            "dataType": "string",
+            "sourceColumn": "WeightUnitMeasureCode"
+          },
+          {
+            "name": "SizeUnitMeasureCode",
+            "dataType": "string",
+            "sourceColumn": "SizeUnitMeasureCode"
+          },
+          {
+            "name": "EnglishProductName",
+            "dataType": "string",
+            "sourceColumn": "EnglishProductName"
+          },
+          {
+            "name": "StandardCost",
+            "dataType": "decimal",
+            "sourceColumn": "StandardCost"
+          },
+          {
+            "name": "Color",
+            "dataType": "string",
+            "sourceColumn": "Color"
+          },
+          {
+            "name": "SafetyStockLevel",
+            "dataType": "int64",
+            "sourceColumn": "SafetyStockLevel"
+          },
+          {
+            "name": "ListPrice",
+            "dataType": "decimal",
+            "sourceColumn": "ListPrice"
+          },
+          {
+            "name": "Size",
+            "dataType": "string",
+            "sourceColumn": "Size"
+          },
+          {
+            "name": "Weight",
+            "dataType": "double",
+            "sourceColumn": "Weight"
+          },
+          {
+            "name": "DaysToManufacture",
+            "dataType": "int64",
+            "sourceColumn": "DaysToManufacture"
+          },
+          {
+            "name": "ProductLine",
+            "dataType": "string",
+            "sourceColumn": "ProductLine"
+          },
+          {
+            "name": "DealerPrice",
+            "dataType": "decimal",
+            "sourceColumn": "DealerPrice"
+          },
+          {
+            "name": "Style",
+            "dataType": "string",
+            "sourceColumn": "Style"
+          },
+          {
+            "name": "ModelName",
+            "dataType": "string",
+            "sourceColumn": "ModelName"
+          },
+          {
+            "name": "StartDate",
+            "dataType": "dateTime",
+            "sourceColumn": "StartDate"
+          },
+          {
+            "name": "EndDate",
+            "dataType": "dateTime",
+            "sourceColumn": "EndDate"
+          },
+          {
+            "name": "Status",
+            "dataType": "string",
+            "sourceColumn": "Status"
+          },
+          {
+            "name": "EnglishProductSubcategoryName",
+            "dataType": "string",
+            "sourceColumn": "EnglishProductSubcategoryName"
+          },
+          {
+            "name": "EnglishProductCategoryName",
+            "dataType": "string",
+            "sourceColumn": "EnglishProductCategoryName"
+          },
+          {
+            "name": "Ststus",
+            "dataType": "string",
+            "sourceColumn": "Ststus"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_COMPREHENSIVEPRODUCTATEGORY = Source{[Schema=\"dbo\",Item=\"COMPREHENSIVEPRODUCTATEGORY\"]}[Data],",
+                "    #\"Filtered Rows\" = Table.SelectRows(dbo_COMPREHENSIVEPRODUCTATEGORY, each ([WeightUnitMeasureCode] <> null) and ([StandardCost] <> null) and ([Size] <> null)),",
+                "    #\"Sorted Rows\" = Table.Sort(#\"Filtered Rows\",{{\"DaysToManufacture\", Order.Ascending}}),",
+                "    #\"Added Conditional Column\" = Table.AddColumn(#\"Sorted Rows\", \"Custom\", each if [Status] = null then \"Completed\" else \"Current\"),",
+                "    #\"Renamed Columns\" = Table.RenameColumns(#\"Added Conditional Column\",{{\"Custom\", \"Ststus\"}})",
+                "in",
+                "    #\"Renamed Columns\""
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Average Product Standard Cost",
+            "expression": "average(DimProducts[StandardCost])",
+            "kpi": {
+              "targetExpression": "100",
+              "statusGraphic": "Traffic Light - Single",
+              "statusExpression": [
+                "var x='DimProducts'[Average Product Standard Cost] return",
+                "            if(ISBLANK(x),BLANK(),",
+                "                    If(x<40,-1,",
+                "\t                If(x<80,0,1)",
+                "                )",
+                "            )",
+                "            "
+              ],
+              "annotations": [
+                {
+                  "name": "GoalType",
+                  "value": "StaticValue"
+                },
+                {
+                  "name": "KpiStatusType",
+                  "value": "Linear"
+                },
+                {
+                  "name": "KpiThresholdType",
+                  "value": "Absolute"
+                },
+                {
+                  "name": "KpiThresholdOrdering",
+                  "value": "Ascending"
+                },
+                {
+                  "name": "KpiThresholdCount",
+                  "value": "2"
+                },
+                {
+                  "name": "KpiThreshold_0",
+                  "value": "40"
+                },
+                {
+                  "name": "KpiThreshold_1",
+                  "value": "80"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Number of Colors",
+            "expression": " DISTINCTCOUNT(DimProducts[Color])"
+          },
+          {
+            "name": "Average Product List Price",
+            "expression": "AVERAGE('DimProducts'[ListPrice])",
+            "kpi": {
+              "targetExpression": "100",
+              "statusGraphic": "Three Symbols UnCircled Colored",
+              "statusExpression": [
+                "var x='DimProducts'[Average Product List Price] return",
+                "            if(ISBLANK(x),BLANK(),",
+                "                    If(x<40,-1,",
+                "\t                If(x<80,0,1)",
+                "                )",
+                "            )",
+                "            "
+              ],
+              "annotations": [
+                {
+                  "name": "GoalType",
+                  "value": "StaticValue"
+                },
+                {
+                  "name": "KpiStatusType",
+                  "value": "Linear"
+                },
+                {
+                  "name": "KpiThresholdType",
+                  "value": "Absolute"
+                },
+                {
+                  "name": "KpiThresholdOrdering",
+                  "value": "Ascending"
+                },
+                {
+                  "name": "KpiThresholdCount",
+                  "value": "2"
+                },
+                {
+                  "name": "KpiThreshold_0",
+                  "value": "40"
+                },
+                {
+                  "name": "KpiThreshold_1",
+                  "value": "80"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Lowest Product List Price",
+            "expression": "MIN('DimProducts'[ListPrice])"
+          },
+          {
+            "name": "Highest Product List Price",
+            "expression": "MAX('DimProducts'[ListPrice])"
+          },
+          {
+            "name": "Lowest Product Standard Cost",
+            "expression": "MIN(DimProducts[StandardCost])"
+          },
+          {
+            "name": "Highest Product Standard Cost",
+            "expression": "MAX(DimProducts[StandardCost])"
+          }
+        ]
+      },
+      {
+        "name": "DimCustomer",
+        "columns": [
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey"
+          },
+          {
+            "name": "BirthDate",
+            "dataType": "dateTime",
+            "sourceColumn": "BirthDate"
+          },
+          {
+            "name": "Gender",
+            "dataType": "string",
+            "sourceColumn": "Gender"
+          },
+          {
+            "name": "YearlyIncome",
+            "dataType": "decimal",
+            "sourceColumn": "YearlyIncome"
+          },
+          {
+            "name": "EnglishEducation",
+            "dataType": "string",
+            "sourceColumn": "EnglishEducation"
+          },
+          {
+            "name": "EnglishOccupation",
+            "dataType": "string",
+            "sourceColumn": "EnglishOccupation"
+          },
+          {
+            "name": "HouseOwnerFlag",
+            "dataType": "string",
+            "sourceColumn": "HouseOwnerFlag"
+          },
+          {
+            "name": "NumberCarsOwned",
+            "dataType": "int64",
+            "sourceColumn": "NumberCarsOwned"
+          },
+          {
+            "name": "DateFirstPurchase",
+            "dataType": "dateTime",
+            "sourceColumn": "DateFirstPurchase"
+          },
+          {
+            "name": "CommuteDistance",
+            "dataType": "string",
+            "sourceColumn": "CommuteDistance"
+          },
+          {
+            "name": "City",
+            "dataType": "string",
+            "sourceColumn": "City"
+          },
+          {
+            "name": "StateProvinceName",
+            "dataType": "string",
+            "sourceColumn": "StateProvinceName"
+          },
+          {
+            "name": "CountryRegionCode",
+            "dataType": "string",
+            "sourceColumn": "CountryRegionCode"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_DimCustomer = Source{[Schema=\"dbo\",Item=\"DimCustomer\"]}[Data],",
+                "    #\"Removed Columns\" = Table.RemoveColumns(dbo_DimCustomer,{\"GeographyKey\", \"CustomerAlternateKey\", \"Title\", \"FirstName\", \"MiddleName\", \"LastName\", \"NameStyle\", \"MaritalStatus\", \"Suffix\", \"EmailAddress\", \"TotalChildren\", \"NumberChildrenAtHome\", \"SpanishEducation\", \"FrenchEducation\", \"SpanishOccupation\", \"FrenchOccupation\", \"AddressLine1\", \"AddressLine2\", \"Phone\", \"FactInternetSales\", \"FactSurveyResponse\"}),",
+                "    #\"Expanded DimGeography\" = Table.ExpandRecordColumn(#\"Removed Columns\", \"DimGeography\", {\"City\", \"StateProvinceName\", \"CountryRegionCode\"}, {\"DimGeography.City\", \"DimGeography.StateProvinceName\", \"DimGeography.CountryRegionCode\"}),",
+                "    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded DimGeography\",{{\"DimGeography.City\", \"City\"}, {\"DimGeography.StateProvinceName\", \"StateProvinceName\"}, {\"DimGeography.CountryRegionCode\", \"CountryRegionCode\"}})",
+                "in",
+                "    #\"Renamed Columns\""
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Number of Customers",
+            "expression": "DISTINCTCOUNT(DimCustomer[CustomerKey])"
+          },
+          {
+            "name": "Average Yearly Income",
+            "expression": " AVERAGE('DimCustomer'[YearlyIncome])"
+          },
+          {
+            "name": "Lowest Reported Yearly Income",
+            "expression": "min('DimCustomer'[YearlyIncome])"
+          },
+          {
+            "name": "Highest Reported Yearly Income",
+            "expression": "MAX(('DimCustomer'[YearlyIncome]))"
+          },
+          {
+            "name": "House owners",
+            "expression": " COUNTROWS(DimCustomer)"
+          },
+          {
+            "name": "Number of House Owners",
+            "expression": "CALCULATE([House owners],'DimCustomer'[HouseOwnerFlag] = \"1\")"
+          },
+          {
+            "name": "Number of non-house Owners",
+            "expression": "CALCULATE([House owners],'DimCustomer'[HouseOwnerFlag] = \"0\")"
+          }
+        ]
+      },
+      {
+        "name": "DimDate",
+        "dataCategory": "Time",
+        "columns": [
+          {
+            "name": "FullDateAlternateKey",
+            "dataType": "dateTime",
+            "isKey": true,
+            "sourceColumn": "FullDateAlternateKey"
+          },
+          {
+            "name": "DayNumberOfWeek",
+            "dataType": "int64",
+            "sourceColumn": "DayNumberOfWeek"
+          },
+          {
+            "name": "EnglishDayNameOfWeek",
+            "dataType": "string",
+            "sourceColumn": "EnglishDayNameOfWeek"
+          },
+          {
+            "name": "DayNumberOfMonth",
+            "dataType": "int64",
+            "sourceColumn": "DayNumberOfMonth"
+          },
+          {
+            "name": "DayNumberOfYear",
+            "dataType": "int64",
+            "sourceColumn": "DayNumberOfYear"
+          },
+          {
+            "name": "WeekNumberOfYear",
+            "dataType": "int64",
+            "sourceColumn": "WeekNumberOfYear"
+          },
+          {
+            "name": "EnglishMonthName",
+            "dataType": "string",
+            "sourceColumn": "EnglishMonthName"
+          },
+          {
+            "name": "MonthNumberOfYear",
+            "dataType": "int64",
+            "sourceColumn": "MonthNumberOfYear"
+          },
+          {
+            "name": "CalendarQuarter",
+            "dataType": "int64",
+            "sourceColumn": "CalendarQuarter"
+          },
+          {
+            "name": "CalendarYear",
+            "dataType": "int64",
+            "sourceColumn": "CalendarYear"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_DimDate = Source{[Schema=\"dbo\",Item=\"DimDate\"]}[Data],",
+                "    #\"Removed Columns\" = Table.RemoveColumns(dbo_DimDate,{\"DateKey\", \"SpanishDayNameOfWeek\"}),",
+                "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Removed Columns\",{\"FullDateAlternateKey\", \"DayNumberOfWeek\", \"EnglishDayNameOfWeek\", \"DayNumberOfMonth\", \"DayNumberOfYear\", \"WeekNumberOfYear\", \"EnglishMonthName\", \"MonthNumberOfYear\", \"CalendarQuarter\", \"CalendarYear\"})",
+                "in",
+                "    #\"Removed Other Columns\""
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimCurrency",
+        "description": "Currency Table for FactInterate sales",
+        "columns": [
+          {
+            "name": "CurrencyKey",
+            "dataType": "int64",
+            "sourceColumn": "CurrencyKey"
+          },
+          {
+            "name": "CurrencyName",
+            "dataType": "string",
+            "sourceColumn": "CurrencyName"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_DimCurrency = Source{[Schema=\"dbo\",Item=\"DimCurrency\"]}[Data],",
+                "    #\"Removed Columns\" = Table.RemoveColumns(dbo_DimCurrency,{\"DimOrganization\", \"FactCurrencyRate\", \"FactInternetSales\", \"FactResellerSales\", \"CurrencyAlternateKey\"})",
+                "in",
+                "    #\"Removed Columns\""
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimSalesTerritory",
+        "columns": [
+          {
+            "name": "SalesTerritoryKey",
+            "dataType": "int64",
+            "sourceColumn": "SalesTerritoryKey"
+          },
+          {
+            "name": "SalesTerritoryAlternateKey",
+            "dataType": "int64",
+            "sourceColumn": "SalesTerritoryAlternateKey"
+          },
+          {
+            "name": "SalesTerritoryRegion",
+            "dataType": "string",
+            "sourceColumn": "SalesTerritoryRegion"
+          },
+          {
+            "name": "SalesTerritoryCountry",
+            "dataType": "string",
+            "sourceColumn": "SalesTerritoryCountry"
+          },
+          {
+            "name": "SalesTerritoryGroup",
+            "dataType": "string",
+            "sourceColumn": "SalesTerritoryGroup"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_DimSalesTerritory = Source{[Schema=\"dbo\",Item=\"DimSalesTerritory\"]}[Data],",
+                "    #\"Removed Columns\" = Table.RemoveColumns(dbo_DimSalesTerritory,{\"FactInternetSales\", \"DimGeography\", \"SalesTerritoryImage\", \"FactResellerSales\", \"DimEmployee\"}),",
+                "    #\"Removed Bottom Rows\" = Table.RemoveLastN(#\"Removed Columns\",1)",
+                "in",
+                "    #\"Removed Bottom Rows\""
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Number of Countries",
+            "expression": "DISTINCTCOUNT('DimSalesTerritory'[SalesTerritoryCountry])",
+            "kpi": {
+              "targetExpression": "'DimCustomer'[Number of Customers]",
+              "statusGraphic": "Three Symbols UnCircled Colored",
+              "statusExpression": [
+                "var x='DimSalesTerritory'[Number of Countries]/'DimSalesTerritory'[_Number of Countries Goal] return",
+                "            if(ISBLANK(x),BLANK(),",
+                "                    If(x<0.4,-1,",
+                "\t                If(x<0.8,0,1)",
+                "                )",
+                "            )",
+                "            "
+              ],
+              "annotations": [
+                {
+                  "name": "GoalType",
+                  "value": "Measure"
+                },
+                {
+                  "name": "KpiStatusType",
+                  "value": "Linear"
+                },
+                {
+                  "name": "KpiThresholdType",
+                  "value": "Percentage"
+                },
+                {
+                  "name": "KpiThresholdOrdering",
+                  "value": "Ascending"
+                },
+                {
+                  "name": "KpiThresholdCount",
+                  "value": "2"
+                },
+                {
+                  "name": "KpiThreshold_0",
+                  "value": "40"
+                },
+                {
+                  "name": "KpiThreshold_1",
+                  "value": "80"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Number of Sales Regions",
+            "expression": "DISTINCTCOUNT('DimSalesTerritory'[SalesTerritoryRegion])",
+            "kpi": {
+              "targetExpression": "'FactInternetSales'[TotalSalesAmount]",
+              "statusGraphic": "Traffic Light - Single",
+              "statusExpression": [
+                "var x='DimSalesTerritory'[Number of Sales Regions]/'DimSalesTerritory'[_Number of Sales Regions Goal] return",
+                "            if(ISBLANK(x),BLANK(),",
+                "                    If(x<0.4,-1,",
+                "\t                If(x<0.8,0,1)",
+                "                )",
+                "            )",
+                "            "
+              ],
+              "annotations": [
+                {
+                  "name": "GoalType",
+                  "value": "Measure"
+                },
+                {
+                  "name": "KpiStatusType",
+                  "value": "Linear"
+                },
+                {
+                  "name": "KpiThresholdType",
+                  "value": "Percentage"
+                },
+                {
+                  "name": "KpiThresholdOrdering",
+                  "value": "Ascending"
+                },
+                {
+                  "name": "KpiThresholdCount",
+                  "value": "2"
+                },
+                {
+                  "name": "KpiThreshold_0",
+                  "value": "40"
+                },
+                {
+                  "name": "KpiThreshold_1",
+                  "value": "80"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Number of Sales Territoty Groups",
+            "expression": " DISTINCTCOUNT('DimSalesTerritory'[SalesTerritoryGroup])"
+          }
+        ]
+      },
+      {
+        "name": "FactInternetSales",
+        "columns": [
+          {
+            "name": "ProductKey",
+            "dataType": "int64",
+            "sourceColumn": "ProductKey"
+          },
+          {
+            "name": "OrderDateKey",
+            "dataType": "int64",
+            "sourceColumn": "OrderDateKey"
+          },
+          {
+            "name": "DueDateKey",
+            "dataType": "int64",
+            "sourceColumn": "DueDateKey"
+          },
+          {
+            "name": "ShipDateKey",
+            "dataType": "int64",
+            "sourceColumn": "ShipDateKey"
+          },
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey"
+          },
+          {
+            "name": "PromotionKey",
+            "dataType": "int64",
+            "sourceColumn": "PromotionKey"
+          },
+          {
+            "name": "CurrencyKey",
+            "dataType": "int64",
+            "sourceColumn": "CurrencyKey"
+          },
+          {
+            "name": "SalesTerritoryKey",
+            "dataType": "int64",
+            "sourceColumn": "SalesTerritoryKey"
+          },
+          {
+            "name": "SalesOrderNumber",
+            "dataType": "string",
+            "sourceColumn": "SalesOrderNumber"
+          },
+          {
+            "name": "SalesOrderLineNumber",
+            "dataType": "int64",
+            "sourceColumn": "SalesOrderLineNumber"
+          },
+          {
+            "name": "RevisionNumber",
+            "dataType": "int64",
+            "sourceColumn": "RevisionNumber"
+          },
+          {
+            "name": "OrderQuantity",
+            "dataType": "int64",
+            "sourceColumn": "OrderQuantity"
+          },
+          {
+            "name": "UnitPrice",
+            "dataType": "decimal",
+            "sourceColumn": "UnitPrice"
+          },
+          {
+            "name": "ExtendedAmount",
+            "dataType": "decimal",
+            "sourceColumn": "ExtendedAmount"
+          },
+          {
+            "name": "UnitPriceDiscountPct",
+            "dataType": "double",
+            "sourceColumn": "UnitPriceDiscountPct"
+          },
+          {
+            "name": "DiscountAmount",
+            "dataType": "double",
+            "sourceColumn": "DiscountAmount"
+          },
+          {
+            "name": "ProductStandardCost",
+            "dataType": "decimal",
+            "sourceColumn": "ProductStandardCost"
+          },
+          {
+            "name": "TotalProductCost",
+            "dataType": "decimal",
+            "sourceColumn": "TotalProductCost"
+          },
+          {
+            "name": "SalesAmount",
+            "dataType": "decimal",
+            "sourceColumn": "SalesAmount"
+          },
+          {
+            "name": "TaxAmt",
+            "dataType": "decimal",
+            "sourceColumn": "TaxAmt"
+          },
+          {
+            "name": "Freight",
+            "dataType": "decimal",
+            "sourceColumn": "Freight"
+          },
+          {
+            "name": "OrderDate",
+            "dataType": "dateTime",
+            "sourceColumn": "OrderDate"
+          },
+          {
+            "name": "DueDate",
+            "dataType": "dateTime",
+            "sourceColumn": "DueDate"
+          },
+          {
+            "name": "ShipDate",
+            "dataType": "dateTime",
+            "sourceColumn": "ShipDate"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/DESKTOP-RS9P4A5;AdventureWorksDW2019\",",
+                "    dbo_FactInternetSales = Source{[Schema=\"dbo\",Item=\"FactInternetSales\"]}[Data],",
+                "    #\"Removed Columns\" = Table.RemoveColumns(dbo_FactInternetSales,{\"DimProduct\", \"DimPromotion\", \"DimSalesTerritory\", \"FactInternetSalesReason\", \"DimCustomer\", \"DimDate(DueDateKey)\", \"DimDate(OrderDateKey)\", \"DimDate(ShipDateKey)\", \"DimCurrency\"}),",
+                "    #\"Filtered Rows\" = Table.SelectRows(#\"Removed Columns\", each true)",
+                "in",
+                "    #\"Filtered Rows\""
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "TotalQuantityOrdered",
+            "expression": "sum('FactInternetSales'[OrderQuantity])"
+          },
+          {
+            "name": "TotalSalesAmount",
+            "expression": "sum('FactInternetSales'[SalesAmount])"
+          },
+          {
+            "name": "TotalTaxesPaid",
+            "expression": "sum('FactInternetSales'[TaxAmt])"
+          },
+          {
+            "name": "TotalProd.Cost",
+            "expression": "sum('FactInternetSales'[TotalProductCost])"
+          },
+          {
+            "name": "TotalFreightPaid",
+            "expression": "sum('FactInternetSales'[Freight])"
+          },
+          {
+            "name": "Average Sales Amount",
+            "expression": "average('FactInternetSales'[SalesAmount])",
+            "kpi": {
+              "targetExpression": "100",
+              "statusGraphic": "Three Symbols UnCircled Colored",
+              "statusExpression": [
+                "var x='FactInternetSales'[Average Sales Amount] return",
+                "            if(ISBLANK(x),BLANK(),",
+                "                    If(x<40,-1,",
+                "\t                If(x<80,0,1)",
+                "                )",
+                "            )",
+                "            "
+              ],
+              "annotations": [
+                {
+                  "name": "GoalType",
+                  "value": "StaticValue"
+                },
+                {
+                  "name": "KpiStatusType",
+                  "value": "Linear"
+                },
+                {
+                  "name": "KpiThresholdType",
+                  "value": "Absolute"
+                },
+                {
+                  "name": "KpiThresholdOrdering",
+                  "value": "Ascending"
+                },
+                {
+                  "name": "KpiThresholdCount",
+                  "value": "2"
+                },
+                {
+                  "name": "KpiThreshold_0",
+                  "value": "40"
+                },
+                {
+                  "name": "KpiThreshold_1",
+                  "value": "80"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "850c7568-d9f0-42e4-af99-9fbb6914cfcf",
+        "fromTable": "FactInternetSales",
+        "fromColumn": "SalesTerritoryKey",
+        "toTable": "DimSalesTerritory",
+        "toColumn": "SalesTerritoryKey"
+      },
+      {
+        "name": "e7db1648-740c-473b-b867-f38b831a2ba3",
+        "fromTable": "FactInternetSales",
+        "fromColumn": "CurrencyKey",
+        "toTable": "DimCurrency",
+        "toColumn": "CurrencyKey"
+      },
+      {
+        "name": "777c8132-45f6-4513-8d14-fd1073d50fe9",
+        "fromTable": "FactInternetSales",
+        "fromColumn": "ProductKey",
+        "toTable": "DimProducts",
+        "toColumn": "ProductKey"
+      },
+      {
+        "name": "c6f66f79-4b3e-4b31-a541-906376b7e964",
+        "fromTable": "FactInternetSales",
+        "fromColumn": "CustomerKey",
+        "toTable": "DimCustomer",
+        "toColumn": "CustomerKey"
+      },
+      {
+        "name": "7c8e1a86-c2a5-4e61-ab5d-f293bf223ec5",
+        "fromTable": "FactInternetSales",
+        "fromColumn": "OrderDateKey",
+        "toTable": "DimDate",
+        "toColumn": "FullDateAlternateKey"
+      }
+    ],
+    "perspectives": [
+      {
+        "name": "SalesbyCurrency",
+        "tables": [
+          {
+            "name": "DimCurrency",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CurrencyName"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DiscountAmount"
+              },
+              {
+                "name": "DueDate"
+              },
+              {
+                "name": "DueDateKey"
+              },
+              {
+                "name": "ExtendedAmount"
+              },
+              {
+                "name": "Freight"
+              },
+              {
+                "name": "OrderDate"
+              },
+              {
+                "name": "OrderDateKey"
+              },
+              {
+                "name": "OrderQuantity"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductStandardCost"
+              },
+              {
+                "name": "PromotionKey"
+              },
+              {
+                "name": "RevisionNumber"
+              },
+              {
+                "name": "SalesAmount"
+              },
+              {
+                "name": "SalesOrderLineNumber"
+              },
+              {
+                "name": "SalesOrderNumber"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "ShipDate"
+              },
+              {
+                "name": "ShipDateKey"
+              },
+              {
+                "name": "TaxAmt"
+              },
+              {
+                "name": "TotalProductCost"
+              },
+              {
+                "name": "UnitPrice"
+              },
+              {
+                "name": "UnitPriceDiscountPct"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SalesbyCustomers",
+        "tables": [
+          {
+            "name": "DimCustomer",
+            "columns": [
+              {
+                "name": "BirthDate"
+              },
+              {
+                "name": "City"
+              },
+              {
+                "name": "CommuteDistance"
+              },
+              {
+                "name": "CountryRegionCode"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DateFirstPurchase"
+              },
+              {
+                "name": "EnglishEducation"
+              },
+              {
+                "name": "EnglishOccupation"
+              },
+              {
+                "name": "Gender"
+              },
+              {
+                "name": "HouseOwnerFlag"
+              },
+              {
+                "name": "NumberCarsOwned"
+              },
+              {
+                "name": "StateProvinceName"
+              },
+              {
+                "name": "YearlyIncome"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DiscountAmount"
+              },
+              {
+                "name": "DueDate"
+              },
+              {
+                "name": "DueDateKey"
+              },
+              {
+                "name": "ExtendedAmount"
+              },
+              {
+                "name": "Freight"
+              },
+              {
+                "name": "OrderDate"
+              },
+              {
+                "name": "OrderDateKey"
+              },
+              {
+                "name": "OrderQuantity"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductStandardCost"
+              },
+              {
+                "name": "PromotionKey"
+              },
+              {
+                "name": "RevisionNumber"
+              },
+              {
+                "name": "SalesAmount"
+              },
+              {
+                "name": "SalesOrderLineNumber"
+              },
+              {
+                "name": "SalesOrderNumber"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "ShipDate"
+              },
+              {
+                "name": "ShipDateKey"
+              },
+              {
+                "name": "TaxAmt"
+              },
+              {
+                "name": "TotalProductCost"
+              },
+              {
+                "name": "UnitPrice"
+              },
+              {
+                "name": "UnitPriceDiscountPct"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SalesTimeframe",
+        "tables": [
+          {
+            "name": "DimDate",
+            "columns": [
+              {
+                "name": "CalendarQuarter"
+              },
+              {
+                "name": "CalendarYear"
+              },
+              {
+                "name": "DayNumberOfMonth"
+              },
+              {
+                "name": "DayNumberOfWeek"
+              },
+              {
+                "name": "DayNumberOfYear"
+              },
+              {
+                "name": "EnglishDayNameOfWeek"
+              },
+              {
+                "name": "EnglishMonthName"
+              },
+              {
+                "name": "FullDateAlternateKey"
+              },
+              {
+                "name": "MonthNumberOfYear"
+              },
+              {
+                "name": "WeekNumberOfYear"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DiscountAmount"
+              },
+              {
+                "name": "DueDate"
+              },
+              {
+                "name": "DueDateKey"
+              },
+              {
+                "name": "ExtendedAmount"
+              },
+              {
+                "name": "Freight"
+              },
+              {
+                "name": "OrderDate"
+              },
+              {
+                "name": "OrderDateKey"
+              },
+              {
+                "name": "OrderQuantity"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductStandardCost"
+              },
+              {
+                "name": "PromotionKey"
+              },
+              {
+                "name": "RevisionNumber"
+              },
+              {
+                "name": "SalesAmount"
+              },
+              {
+                "name": "SalesOrderLineNumber"
+              },
+              {
+                "name": "SalesOrderNumber"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "ShipDate"
+              },
+              {
+                "name": "ShipDateKey"
+              },
+              {
+                "name": "TaxAmt"
+              },
+              {
+                "name": "TotalProductCost"
+              },
+              {
+                "name": "UnitPrice"
+              },
+              {
+                "name": "UnitPriceDiscountPct"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SalesbyProducts",
+        "tables": [
+          {
+            "name": "DimProducts",
+            "columns": [
+              {
+                "name": "Color"
+              },
+              {
+                "name": "DaysToManufacture"
+              },
+              {
+                "name": "DealerPrice"
+              },
+              {
+                "name": "EndDate"
+              },
+              {
+                "name": "EnglishProductCategoryName"
+              },
+              {
+                "name": "EnglishProductName"
+              },
+              {
+                "name": "EnglishProductSubcategoryName"
+              },
+              {
+                "name": "ListPrice"
+              },
+              {
+                "name": "ModelName"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductLine"
+              },
+              {
+                "name": "SafetyStockLevel"
+              },
+              {
+                "name": "Size"
+              },
+              {
+                "name": "SizeUnitMeasureCode"
+              },
+              {
+                "name": "StandardCost"
+              },
+              {
+                "name": "StartDate"
+              },
+              {
+                "name": "Status"
+              },
+              {
+                "name": "Ststus"
+              },
+              {
+                "name": "Style"
+              },
+              {
+                "name": "Weight"
+              },
+              {
+                "name": "WeightUnitMeasureCode"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DiscountAmount"
+              },
+              {
+                "name": "DueDate"
+              },
+              {
+                "name": "DueDateKey"
+              },
+              {
+                "name": "ExtendedAmount"
+              },
+              {
+                "name": "Freight"
+              },
+              {
+                "name": "OrderDate"
+              },
+              {
+                "name": "OrderDateKey"
+              },
+              {
+                "name": "OrderQuantity"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductStandardCost"
+              },
+              {
+                "name": "PromotionKey"
+              },
+              {
+                "name": "RevisionNumber"
+              },
+              {
+                "name": "SalesAmount"
+              },
+              {
+                "name": "SalesOrderLineNumber"
+              },
+              {
+                "name": "SalesOrderNumber"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "ShipDate"
+              },
+              {
+                "name": "ShipDateKey"
+              },
+              {
+                "name": "TaxAmt"
+              },
+              {
+                "name": "TotalProductCost"
+              },
+              {
+                "name": "UnitPrice"
+              },
+              {
+                "name": "UnitPriceDiscountPct"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SalesbyTerritory",
+        "tables": [
+          {
+            "name": "DimSalesTerritory",
+            "columns": [
+              {
+                "name": "SalesTerritoryAlternateKey"
+              },
+              {
+                "name": "SalesTerritoryCountry"
+              },
+              {
+                "name": "SalesTerritoryGroup"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "SalesTerritoryRegion"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "columns": [
+              {
+                "name": "CurrencyKey"
+              },
+              {
+                "name": "CustomerKey"
+              },
+              {
+                "name": "DiscountAmount"
+              },
+              {
+                "name": "DueDate"
+              },
+              {
+                "name": "DueDateKey"
+              },
+              {
+                "name": "ExtendedAmount"
+              },
+              {
+                "name": "Freight"
+              },
+              {
+                "name": "OrderDate"
+              },
+              {
+                "name": "OrderDateKey"
+              },
+              {
+                "name": "OrderQuantity"
+              },
+              {
+                "name": "ProductKey"
+              },
+              {
+                "name": "ProductStandardCost"
+              },
+              {
+                "name": "PromotionKey"
+              },
+              {
+                "name": "RevisionNumber"
+              },
+              {
+                "name": "SalesAmount"
+              },
+              {
+                "name": "SalesOrderLineNumber"
+              },
+              {
+                "name": "SalesOrderNumber"
+              },
+              {
+                "name": "SalesTerritoryKey"
+              },
+              {
+                "name": "ShipDate"
+              },
+              {
+                "name": "ShipDateKey"
+              },
+              {
+                "name": "TaxAmt"
+              },
+              {
+                "name": "TotalProductCost"
+              },
+              {
+                "name": "UnitPrice"
+              },
+              {
+                "name": "UnitPriceDiscountPct"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "roles": [
+      {
+        "name": "Procurement",
+        "description": "DWH for Procurement Department",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "DimProducts",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "FactInternetSales",
+            "columnPermissions": [
+              {
+                "name": "TotalProductCost",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "UnitPrice",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "OrderQuantity",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "RevisionNumber",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "Freight",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "OrderDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "DueDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "ShipDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "ProductStandardCost",
+                "metadataPermission": "none"
+              }
+            ]
+          },
+          {
+            "name": "DimDate",
+            "metadataPermission": "none"
+          }
+        ]
+      },
+      {
+        "name": "Sales",
+        "description": "DWH for Sales",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "DimCustomer",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimCurrency",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "FactInternetSales",
+            "metadataPermission": "none"
+          }
+        ]
+      },
+      {
+        "name": "Customer Service",
+        "description": "DWH for Customer Service",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "DimCustomer",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimDate",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "FactInternetSales",
+            "columnPermissions": [
+              {
+                "name": "OrderDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "DueDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "ShipDate",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "ExtendedAmount",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "UnitPriceDiscountPct",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "DiscountAmount",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "OrderQuantity",
+                "metadataPermission": "none"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Senior Managers",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "DimProducts",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimCustomer",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimSalesTerritory",
+            "columnPermissions": [
+              {
+                "name": "SalesTerritoryKey",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "SalesTerritoryAlternateKey",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "SalesTerritoryRegion",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "SalesTerritoryCountry",
+                "metadataPermission": "none"
+              },
+              {
+                "name": "SalesTerritoryGroup",
+                "metadataPermission": "none"
+              }
+            ]
+          },
+          {
+            "name": "FactInternetSales",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimDate",
+            "metadataPermission": "none"
+          }
+        ]
+      },
+      {
+        "name": "Directors",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "DimSalesTerritory",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "FactInternetSales",
+            "metadataPermission": "none"
+          },
+          {
+            "name": "DimCurrency",
+            "metadataPermission": "none"
+          }
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "700"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}
